@@ -6,8 +6,8 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 
-from .. import crud, models, schemas
-from ..core.database import SessionLocal
+import crud, models, schemas
+from core.database import SessionLocal
 
 import os
 from dotenv import load_dotenv

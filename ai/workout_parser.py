@@ -70,4 +70,3 @@ async def parse_workout_text(text: str) -> schemas.WorkoutLogCreate:
     except json.JSONDecodeError:
         logger.error(f"Failed to parse JSON from AI: {response_text}")
         raise ValueError("AI failed to parse workout.")
-

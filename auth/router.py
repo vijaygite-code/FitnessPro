@@ -6,9 +6,9 @@ import random
 import string
 import logging
 
-from .. import crud, models, schemas
-from . import auth, email_utils
-from ..core.database import get_db
+import crud, models, schemas
+from auth import auth, email_utils
+from core.database import get_db
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 # Legacy support for /token and /users at root if needed, or we can move them here.

@@ -1,8 +1,8 @@
 import enum
-from sqlalchemy import Column, Integer, String, Float, Text, Date, ForeignKey, Enum, DateTime
+from sqlalchemy import Column, Integer, String, Float, Text, Date, ForeignKey, Enum, DateTime, Table
 from sqlalchemy.orm import relationship
 from datetime import date, datetime
-from .core.database import Base
+from core.database import Base
 
 class UserRole(str, enum.Enum):
     ADMIN = "admin"
@@ -19,16 +19,19 @@ class User(Base):
     hashed_password = Column(String)
     role = Column(Enum(UserRole), default=UserRole.unpaid, nullable=False)
 
-    age = Column(Integer)
-    weight = Column(Float)
-    height = Column(Float)
-    goals = Column(Text)
+    age = Column(Integer, nullable=True)
+    weight = Column(Float, nullable=True)
+    height = Column(Float, nullable=True)
+    goals = Column(Text, nullable=True)
     profile_picture = Column(String, nullable=True)
 
     workout_logs = relationship("WorkoutLog", back_populates="owner")
     progress_entries = relationship("Progress", back_populates="owner")
     habit_entries = relationship("Habit", back_populates="owner")
     meal_logs = relationship("MealLog", back_populates="owner")
+
+    # Add relationship for dashboard widgets
+    dashboard_widgets = relationship("DashboardWidget", back_populates="owner")
 
 class Habit(Base):
     __tablename__ = "habits"
@@ -101,6 +104,14 @@ class SetLog(Base):
 
     logged_exercise = relationship("LoggedExercise", back_populates="sets")
 
+# Association table for many-to-many relationship between Exercise and MuscleGroup
+exercise_muscle_group_association = Table(
+    "exercise_muscle_group_association",
+    Base.metadata,
+    Column("exercise_id", Integer, ForeignKey("exercises.id"), primary_key=True),
+    Column("muscle_group_id", Integer, ForeignKey("muscle_groups.id"), primary_key=True)
+)
+
 class Exercise(Base):
     __tablename__ = "exercises"
     id = Column(Integer, primary_key=True, index=True)
@@ -108,24 +119,21 @@ class Exercise(Base):
     description = Column(Text, nullable=True)
     created_by_user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
 
-    muscle_groups = relationship("MuscleGroup", secondary="exercise_muscle_group_association")
+    muscle_groups = relationship("MuscleGroup", secondary=exercise_muscle_group_association, back_populates="exercises")
 
 class MuscleGroup(Base):
     __tablename__ = "muscle_groups"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, index=True)
 
-class ExerciseMuscleGroupAssociation(Base):
-    __tablename__ = "exercise_muscle_group_association"
-    exercise_id = Column(Integer, ForeignKey("exercises.id"), primary_key=True)
-    muscle_group_id = Column(Integer, ForeignKey("muscle_groups.id"), primary_key=True)
+    exercises = relationship("Exercise", secondary=exercise_muscle_group_association, back_populates="muscle_groups")
 
 class PasswordReset(Base):
     __tablename__ = "password_resets"
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String, index=True)
     otp = Column(String)
-    expires_at = Column(Date) # Should be DateTime in real app, using Date for consistency with other fields if SQLite limitation? No, SQLite supports DateTime.
+    expires_at = Column(DateTime) # Changed to DateTime for better precision
 
 class WorkoutTemplate(Base):
     __tablename__ = "workout_templates"
@@ -170,8 +178,6 @@ class Post(Base):
 
     author = relationship("User")
 
-
-
 class DashboardWidget(Base):
     __tablename__ = "dashboard_widgets"
     id = Column(Integer, primary_key=True, index=True)
@@ -185,4 +191,4 @@ class DashboardWidget(Base):
     filter_id = Column(String, nullable=True) # ID of muscle or exercise (stored as string for flexibility/simplicity or int)
     order = Column(Integer, default=0)
 
-    owner = relationship("User")
+    owner = relationship("User", back_populates="dashboard_widgets")

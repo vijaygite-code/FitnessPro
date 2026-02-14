@@ -3,9 +3,9 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
 
-from .. import crud, schemas, models
-from ..core.database import get_db
-from ..auth import auth
+import crud, schemas, models
+from core.database import get_db
+from auth import auth
 
 router = APIRouter(
     prefix="/analytics",
@@ -75,7 +75,7 @@ async def get_ai_insight(
     Get AI-generated insight based on the provided context summary.
     """
     try:
-        from ..ai import ai_analytics
+        from ai import ai_analytics
         insight = await ai_analytics.generate_progress_insight(request.context)
         return {"insight": insight}
     except Exception as e:

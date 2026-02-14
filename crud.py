@@ -210,8 +210,8 @@ def create_challenge(db: Session, challenge: schemas.ChallengeCreate):
 def get_challenges(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Challenge).offset(skip).limit(limit).all()
 
-from .ai import moderator
-from .mind import models as mind_models
+from ai import moderator
+from mind import models as mind_models
 
 # --- Community Posts ---
 async def create_post(db: Session, post: schemas.PostCreate, user_id: int):

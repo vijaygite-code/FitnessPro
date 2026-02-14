@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from .. import models, crud
+import models, crud
 from datetime import date, timedelta
 
 def get_system_stats(db: Session):

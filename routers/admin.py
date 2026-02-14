@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from ..core.database import get_db
-from .. import models, schemas
-from ..auth import auth
+from core.database import get_db
+import models, schemas
+from auth import auth
 
 router = APIRouter(
     prefix="/admin",

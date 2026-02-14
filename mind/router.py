@@ -1,12 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from ..core.database import get_db
-from .. import models, schemas
-from ..auth import auth
+from core.database import get_db
 from . import models as mind_models
-from ..ai import moderator
+from auth import auth
+import models, schemas
+from ai import moderator
 from datetime import date, timedelta
 import json
+from ai.gemini_api import _call_gemini_api
 
 router = APIRouter(
     prefix="/mind",
@@ -59,7 +60,6 @@ def resolve_task(
         task.status = mind_models.TaskStatus.REJECTED
         
     db.commit()
-    db.commit()
     return {"status": "resolved"}
 
 @router.get("/logs")
@@ -71,12 +71,6 @@ def get_monitoring_logs(
         raise HTTPException(status_code=403, detail="Not authorized")
     
     return db.query(mind_models.MonitoringLog).order_by(mind_models.MonitoringLog.timestamp.desc()).limit(50).all()
-
-# --- User Endpoints ---
-
-from ..ai.gemini_api import _call_gemini_api
-
-# ... (imports remain)
 
 # --- User Endpoints ---
 
@@ -111,7 +105,7 @@ async def ask_mind(
     is_admin = current_user.role == models.UserRole.ADMIN
     
     if is_admin:
-        from ..ai import admin_tools
+        from ai import admin_tools
         stats = admin_tools.get_system_stats(db)
         system_context = f"""
         You are 'The Cortex', an advanced AI assistant to the Owner/Admin of FitnessPro.
@@ -141,14 +135,14 @@ async def ask_mind(
         answer += "\n\n(I have flagged this conversation for human review.)"
         escalate = True
     
-    user_query = mind_models.UserQuery(
-        user_id=current_user.id,
-        question=query,
-        answer=answer,
-        escalated_to_admin=escalate
-    )
-    db.add(user_query)
-    db.commit()
+    # user_query = mind_models.UserQuery(
+    #     user_id=current_user.id,
+    #     question=query,
+    #     answer=answer,
+    #     escalated_to_admin=escalate
+    # )
+    # db.add(user_query)
+    # db.commit()
     
     return {"answer": answer}
 

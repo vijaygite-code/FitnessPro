@@ -2,7 +2,8 @@ from sqlalchemy import Column, Integer, String, Text, Date, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from datetime import date, datetime
 import enum
-from ..core.database import Base
+from core.database import Base
+from models import User, Post
 
 class TaskType(str, enum.Enum):
     EMAIL = "email"
@@ -17,9 +18,9 @@ class TaskStatus(str, enum.Enum):
 class MindTask(Base):
     __tablename__ = "mind_tasks"
     id = Column(Integer, primary_key=True, index=True)
-    type = Column(Enum(TaskType), nullable=False)
+    type = Column(String, nullable=False) # Changed to String to avoid Enum issues with SQLite sometimes
     content = Column(JSON, nullable=False) # Flexible payload
-    status = Column(Enum(TaskStatus), default=TaskStatus.PENDING)
+    status = Column(String, default="pending")
     created_at = Column(DateTime, default=datetime.utcnow)
     
     # Optional: Link to user if specific to a user interaction, but mostly system tasks
@@ -50,7 +51,7 @@ class MonitoringLog(Base):
     __tablename__ = "monitoring_logs"
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
-    action = Column(Enum(MonitoringAction), nullable=False)
+    action = Column(String, nullable=False) # Changed to String
     reason = Column(String, nullable=False)
     timestamp = Column(DateTime, default=datetime.utcnow)
     
